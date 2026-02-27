@@ -1,5 +1,5 @@
 import streamlit as st
-from PIL import Image#, ImageGrab
+from PIL import Image, ImageOps
 from zipfile import ZipFile
 from ultralytics import YOLO
 import base64
@@ -34,39 +34,59 @@ st.markdown(hide_menu, unsafe_allow_html=True)
 st.markdown(
     """
     <style>
-    /* Styles CSS pour le titre d'une page */
-    .page-title {
-        text-align: center;
-        font-weight: bold;
-        font-size: xxx-large;
-        color: #ffffff;
-    }
-    .dot {
-    height: 25px;
-    width: 25px;
-    background-color: #bbb;
-    border-radius: 50%;
-    color : red;
-    display: inline-block;
-    }
-    /* Styles CSS pour les conteneurs de texte */
-    .txt-container-flower {
-        background-color: #010713;
-        color: #ffffff;
-        border-radius: 25% 10% / 5% 20%;
-        padding: 5%;
-        margin: 3%;
-        text-align: justify;
+    /* --- GENERAL --- */
+    h3, h5, h6 {
+        color: #E2E8F0; /* Lighter gray for better readability */
+        text-shadow: 1px 1px 3px black;
     }
 
-    /* Solid border */
-    hr.solid {
-        border-top: 3px solid #ffffff;
+    /* --- CONTAINERS --- */
+    .block-container {
+        background-color: rgba(15, 23, 42, 0.85); /* Slate 900 with transparency */
+        border: 1px solid #475569; /* Slate 600 */
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 2rem 0 2rem 0;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
-    h3 {
-        color: #ffffff;
-        backdrop-filter: blur(1px);
+
+    /* --- WIDGETS --- */
+
+    /* Buttons */
+    .stButton > button {
+        border-radius: 8px;
+        border: 1px solid #3399FF;
+        background-color: transparent;
+        color: #3399FF;
+        transition: all 0.2s ease-in-out;
+        font-weight: 600;
     }
+    .stButton > button:hover {
+        background-color: #3399FF;
+        color: white;
+        border-color: #3399FF;
+        transform: scale(1.02);
+    }
+    .stButton > button:active {
+        background-color: #0077E6 !important;
+        border-color: #0077E6 !important;
+    }
+
+    /* File Uploader */
+    .stFileUploader {
+        border: 2px dashed #475569;
+        background-color: rgba(15, 23, 42, 0.5);
+        border-radius: 12px;
+        padding: 1rem;
+    }
+    .stFileUploader label {
+        color: #E2E8F0;
+        font-size: 1.1rem;
+    }
+    .stFileUploader [data-testid="stFileUploadDropzone"] p {
+        color: #94A3B8; /* Slate 400 */
+    }
+
     </style>
     """,
     unsafe_allow_html=True
@@ -98,25 +118,113 @@ def add_background(image_file):
 
 add_background('Background.png')
 model = YOLO("Model.pt")
-left, cent,last = st.columns(3)
-with cent:
-    st.image(add_logo(logo_path="logo_shipmark.png", width=200, height=200))
-#my_logo = add_logo(logo_path="logo_shipmark.png", width=200, height=200)
-#st.image(my_logo)
-st.markdown("<h3 style='text-align: center;'>Testez notre algorithme d'identification des bateaux en téléchargeant une photo ci-dessous.</h3>" , unsafe_allow_html=True)
-fichiers_images = st.file_uploader("Upload your image", type = ["jpg", "jpeg", "png"], label_visibility = 'hidden')
-if fichiers_images is not None:
+
+with open("logo_shipmark.png", "rb") as f:
+    logo_base64 = base64.b64encode(f.read()).decode()
+st.markdown(f'<div style="display: flex; justify-content: center;"><img src="data:image/png;base64,{logo_base64}" width="200" height="200"></div>', unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; padding: 0 0 2rem 0;'>Testez notre algorithme d'identification de bateaux.</h3>" , unsafe_allow_html=True)
+
+col_text, col_img = st.columns([3, 1], gap="large")
+
+with col_text:
+    st.markdown("""
+        <p style='text-align: justify; margin-bottom: 0;'>
+            Initié par Airbus, Shipmark est un projet de groupe développant une technologie de surveillance maritime basée sur un algorithme de détection de bateaux et de points de repère. 
+            Son objectif ? Disposer d'un outil pour identifier/prévenir la pêche illégale, les dégazages ou déballastages en mer dans les zones maritimes. 
+            <br> <br> 
+            Projet sélectionné pour la finale des projets de fin d'études (Engineering Project Awards).
+        </p>
+        """, unsafe_allow_html=True)
+
+with col_img:
+    # use_column_width=True est essentiel ici pour que l'image 
+    # remplisse toute la largeur de sa colonne (qui est maintenant plus grande)
+    st.image("Affiche_Shipmark.png", 
+             caption="Affiche du projet Shipmark", 
+             use_column_width=True)
+st.markdown("---")
+
+# --- Fonctions et initialisation ---
+@st.cache_data
+def get_random_demo_images(n=5, _rerun_trigger=0): # Ajout d'un trigger pour le cache
+    folder_path = "test_demo"
+    if not os.path.exists(folder_path):
+        return []
+    files = [f for f in os.listdir(folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    if not files:
+        return []
+    return random.sample(files, min(len(files), n))
+
+if 'selected_demo' not in st.session_state:
+    st.session_state.selected_demo = None
+if 'rerun_trigger' not in st.session_state:
+    st.session_state.rerun_trigger = 0
+
+# --- Section de sélection d'image ---
+with st.container():
+    st.markdown("<h5>1. Téléchargez votre propre image (image satellites obligatoire)</h5>", unsafe_allow_html=True)
+    fichiers_images = st.file_uploader("Déposez une image ici ou cliquez pour parcourir", type=["jpg", "jpeg", "png"], label_visibility='collapsed')
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with st.container():
+    head1, head2 = st.columns([0.7, 0.3])
+    with head1:
+        st.markdown("<h5>2. Ou choisissez une image de notre sélection</h5>", unsafe_allow_html=True)
+    with head2:
+        if st.button("🔄 Changer la sélection"):
+            st.session_state.rerun_trigger += 1
+            st.rerun()
+
+    st.write("")
+
+    demo_images = get_random_demo_images(5, _rerun_trigger=st.session_state.rerun_trigger)
+    if demo_images:
+        cols = st.columns(5)
+        for idx, img_name in enumerate(demo_images):
+            img_path = os.path.join("test_demo", img_name)
+            with cols[idx]:
+                container = st.container()
+                try:
+                    img_display = Image.open(img_path)
+                    
+                    is_selected = (st.session_state.selected_demo == img_path)
+                    
+                    # Ajoute une bordure via PIL si l'image est sélectionnée
+                    if is_selected:
+                        img_to_show = ImageOps.expand(img_display, border=10, fill='#3399FF')
+                    else:
+                        img_to_show = img_display
+
+                    container.image(img_to_show, use_column_width=True)
+                    
+                    if container.button("Sélectionner", key=f"demo_{idx}", use_container_width=True):
+                        st.session_state.selected_demo = img_path if not is_selected else None
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"Erreur image: {img_name}")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+# --- Logique de sélection et affichage des résultats ---
+image_source = fichiers_images or st.session_state.selected_demo
+
+if image_source is not None:
+    st.markdown('<div class="block-container">', unsafe_allow_html=True)
+    
+    if st.button("❌ Effacer la sélection et analyser une autre image"):
+        st.session_state.selected_demo = None
+        # Pour le file_uploader, la seule façon de "l'effacer" est de relancer la page.
+        # Le rerun suffit car l'état du widget sera perdu.
+        st.rerun()
+
     col1, col2 = st.columns(2)
     # Adding image to the first column if image is uploaded
     with col1:
-         if fichiers_images:
-            # Opening the uploaded image
-            image = Image.open(fichiers_images)
-            # Adding the uploaded image to the page with a caption
-            st.image(image,
-                        use_column_width=True
-                        )
-            st.markdown("<h6 style='text-align: center;'>Image téléchargée</h1>", unsafe_allow_html=True)
+        # Opening the uploaded image
+        image = Image.open(image_source)
+        # Adding the uploaded image to the page with a caption
+        st.image(image, use_column_width=True)
+        st.markdown("<h6 style='text-align: center;'>Image analysée</h6>", unsafe_allow_html=True)
     results = model(image)
     res_plotted = results[0].plot()[:, :, ::-1]
     with col2:
@@ -124,4 +232,5 @@ if fichiers_images is not None:
                 use_column_width=True
                  )
         st.markdown("<h6 style='text-align: center;'>Bateau detecté</h1>", unsafe_allow_html=True)
-        st.image("Legende.PNG")
+        st.image("Legende.PNG")    
+    st.markdown('</div>', unsafe_allow_html=True)
