@@ -1,3 +1,4 @@
+## ======== Importation des librairies ======== ##
 import streamlit as st
 from PIL import Image, ImageOps
 from zipfile import ZipFile
@@ -30,7 +31,7 @@ header{
 """
 st.markdown(hide_menu, unsafe_allow_html=True)
 
-# CSS
+## ======== CSS ======== ##
 st.markdown(
     """
     <style>
@@ -92,8 +93,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# -------------------------------------------------------------------------------
-# permet d'afficher notre logo sur la sidebar
+## ======== Définition des foncitons ======== ##
 @st.cache_resource
 def add_logo(logo_path, width, height):
     #Lire et retourner l'image
@@ -117,13 +117,17 @@ def add_background(image_file):
     )
 
 add_background('Background.png')
+
+## ======== Importation du model YOLO ======== ##
 model = YOLO("Model.pt")
 
+## ======== Logo Shipmark ======== ##
 with open("logo_shipmark.png", "rb") as f:
     logo_base64 = base64.b64encode(f.read()).decode()
 st.markdown(f'<div style="display: flex; justify-content: center;"><img src="data:image/png;base64,{logo_base64}" width="200" height="200"></div>', unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; padding: 0 0 2rem 0;'>Testez notre algorithme d'identification de bateaux.</h3>" , unsafe_allow_html=True)
 
+## ======== Text Projet ======== ##
 col_text, col_img = st.columns([3, 1], gap="large")
 
 with col_text:
@@ -132,21 +136,20 @@ with col_text:
             Initié par Airbus, Shipmark est un projet de groupe développant une technologie de surveillance maritime basée sur un algorithme de détection de bateaux et de points de repère. 
             Son objectif ? Disposer d'un outil pour identifier/prévenir la pêche illégale, les dégazages ou déballastages en mer dans les zones maritimes. 
             <br> <br> 
-            Projet sélectionné pour la finale des projets de fin d'études (Engineering Project Awards).
+            Projet sélectionné pour la finale des projets de fin d'études (Engineering Project Awards 2024).
         </p>
         """, unsafe_allow_html=True)
 
+## ======== Affiche Shipmark ======== ##
 with col_img:
-    # use_column_width=True est essentiel ici pour que l'image 
-    # remplisse toute la largeur de sa colonne (qui est maintenant plus grande)
     st.image("Affiche_Shipmark.png", 
              caption="Affiche du projet Shipmark", 
              use_column_width=True)
 st.markdown("---")
 
-# --- Fonctions et initialisation ---
+## ======== Fonction et Initialisation ======== ##
 @st.cache_data
-def get_random_demo_images(n=5, _rerun_trigger=0): # Ajout d'un trigger pour le cache
+def get_random_demo_images(n=5, rerun_trigger=0): # Ajout d'un trigger pour le cache
     folder_path = "test_demo"
     if not os.path.exists(folder_path):
         return []
@@ -159,11 +162,16 @@ if 'selected_demo' not in st.session_state:
     st.session_state.selected_demo = None
 if 'rerun_trigger' not in st.session_state:
     st.session_state.rerun_trigger = 0
+if 'uploader_key' not in st.session_state:
+    st.session_state.uploader_key = 0
 
-# --- Section de sélection d'image ---
+def reset_demo_selection():
+    st.session_state.selected_demo = None
+
+## ======== Sélection d'images ======== ##
 with st.container():
-    st.markdown("<h5>1. Téléchargez votre propre image (image satellites obligatoire)</h5>", unsafe_allow_html=True)
-    fichiers_images = st.file_uploader("Déposez une image ici ou cliquez pour parcourir", type=["jpg", "jpeg", "png"], label_visibility='collapsed')
+    st.markdown("<h5>1. Téléchargez votre propre image. (image satellite obligatoire)</h5>", unsafe_allow_html=True)
+    fichiers_images = st.file_uploader("Déposez une image ici ou cliquez pour parcourir.", type=["jpg", "jpeg", "png"], label_visibility='collapsed', key=f"uploader_{st.session_state.uploader_key}", on_change=reset_demo_selection)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with st.container():
@@ -177,7 +185,7 @@ with st.container():
 
     st.write("")
 
-    demo_images = get_random_demo_images(5, _rerun_trigger=st.session_state.rerun_trigger)
+    demo_images = get_random_demo_images(5, rerun_trigger=st.session_state.rerun_trigger)
     if demo_images:
         cols = st.columns(5)
         for idx, img_name in enumerate(demo_images):
@@ -189,7 +197,6 @@ with st.container():
                     
                     is_selected = (st.session_state.selected_demo == img_path)
                     
-                    # Ajoute une bordure via PIL si l'image est sélectionnée
                     if is_selected:
                         img_to_show = ImageOps.expand(img_display, border=10, fill='#3399FF')
                     else:
@@ -199,13 +206,14 @@ with st.container():
                     
                     if container.button("Sélectionner", key=f"demo_{idx}", use_container_width=True):
                         st.session_state.selected_demo = img_path if not is_selected else None
+                        st.session_state.uploader_key += 1
                         st.rerun()
                 except Exception as e:
                     st.error(f"Erreur image: {img_name}")
     st.markdown('</div>', unsafe_allow_html=True)
 
 
-# --- Logique de sélection et affichage des résultats ---
+## ======== Affichage des images ======== ##
 image_source = fichiers_images or st.session_state.selected_demo
 
 if image_source is not None:
@@ -213,16 +221,12 @@ if image_source is not None:
     
     if st.button("❌ Effacer la sélection et analyser une autre image"):
         st.session_state.selected_demo = None
-        # Pour le file_uploader, la seule façon de "l'effacer" est de relancer la page.
-        # Le rerun suffit car l'état du widget sera perdu.
+        st.session_state.uploader_key += 1
         st.rerun()
 
     col1, col2 = st.columns(2)
-    # Adding image to the first column if image is uploaded
     with col1:
-        # Opening the uploaded image
         image = Image.open(image_source)
-        # Adding the uploaded image to the page with a caption
         st.image(image, use_column_width=True)
         st.markdown("<h6 style='text-align: center;'>Image analysée</h6>", unsafe_allow_html=True)
     results = model(image)
@@ -234,3 +238,15 @@ if image_source is not None:
         st.markdown("<h6 style='text-align: center;'>Bateau detecté</h1>", unsafe_allow_html=True)
         st.image("Legende.PNG")    
     st.markdown('</div>', unsafe_allow_html=True)
+
+## ======== Footer ======== ##
+st.markdown(
+    """
+    <div style='text-align: center; margin-top: 50px; padding-bottom: 20px; color: #94A3B8;'>
+        <hr style='border-color: #475569; margin-bottom: 20px;'>
+        <p style='margin: 0 0 0.5rem;'>© 2024 Shipmark </p>
+        <p style='margin: 0 7rem;'> Développé par Anne-Julie Hottin - Maël Gueguen - Nicolas Rousselot Théo Masson - Cédric Song - Mike Leveleux. 
+    </div>
+    """,
+    unsafe_allow_html=True
+)
