@@ -36,8 +36,8 @@ st.markdown(
     """
     <style>
     /* --- GENERAL --- */
-    h3, h5, h6 {
-        color: #E2E8F0; /* Lighter gray for better readability */
+    h3, h5, h6, p {
+        color: #ffffff;
         text-shadow: 1px 1px 3px black;
     }
 
@@ -77,7 +77,7 @@ st.markdown(
     /* File Uploader */
     .stFileUploader {
         border: 2px dashed #475569;
-        background-color: rgba(15, 23, 42, 0.5);
+        background-color: rgba(38, 39, 48);
         border-radius: 12px;
         padding: 1rem;
     }
