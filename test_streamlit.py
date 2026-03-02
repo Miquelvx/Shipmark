@@ -54,23 +54,24 @@ st.markdown(
     /* --- WIDGETS --- */
 
     /* Buttons */
-    .stButton > button {
+    .stButton > button, .stLinkButton > a {
         border-radius: 8px;
         border: 1px solid #3399FF;
         background-color: transparent;
         color: #3399FF;
         transition: all 0.2s ease-in-out;
         font-weight: 600;
+        text-decoration: none;
     }
-    .stButton > button:hover {
+    .stButton > button:hover, .stLinkButton > a:hover {
         background-color: #3399FF;
         color: white;
         border-color: #3399FF;
         transform: scale(1.02);
-    }
-    .stButton > button:active {
+    }    .stButton > button:active, .stLinkButton > a:active {
         background-color: #0077E6 !important;
         border-color: #0077E6 !important;
+        color: white;
     }
 
     /* File Uploader */
@@ -116,13 +117,13 @@ def add_background(image_file):
     unsafe_allow_html=True
     )
 
-add_background('Background.png')
+add_background('./img_app/Background.png')
 
 ## ======== Importation du model YOLO ======== ##
 model = YOLO("Model.pt")
 
 ## ======== Logo Shipmark ======== ##
-with open("logo_shipmark.png", "rb") as f:
+with open("./img_app/logo_shipmark.png", "rb") as f:
     logo_base64 = base64.b64encode(f.read()).decode()
 st.markdown(f'<div style="display: flex; justify-content: center;"><img src="data:image/png;base64,{logo_base64}" width="200" height="200"></div>', unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; padding: 0 0 2rem 0;'>Testez notre algorithme d'identification de bateaux.</h3>" , unsafe_allow_html=True)
@@ -142,10 +143,17 @@ with col_text:
 
 ## ======== Affiche Shipmark ======== ##
 with col_img:
-    st.image("Affiche_Shipmark.png", 
+    st.image("./img_app/Affiche_Shipmark.png", 
              caption="Affiche du projet Shipmark", 
              use_column_width=True)
+    
+## ======== Bouton Dashboard CometML ======== ##
+st.write("")
+col_b1, col_b2, col_b3 = st.columns([1, 1, 1])
+with col_b2:
+    st.link_button("📈 Voir le Dashboard Comet", "https://www.comet.com/miquelvx/shipmark-entrainement/view/8r3SrgJj76S1pXVBHekpc4av8/panels", use_container_width=True)
 st.markdown("---")
+
 
 ## ======== Fonction et Initialisation ======== ##
 @st.cache_data
@@ -217,8 +225,7 @@ with st.container():
 image_source = fichiers_images or st.session_state.selected_demo
 
 if image_source is not None:
-    st.markdown('<div class="block-container">', unsafe_allow_html=True)
-    
+    st.markdown("---")
     if st.button("❌ Effacer la sélection et analyser une autre image"):
         st.session_state.selected_demo = None
         st.session_state.uploader_key += 1
@@ -236,7 +243,36 @@ if image_source is not None:
                 use_column_width=True
                  )
         st.markdown("<h6 style='text-align: center;'>Bateau detecté</h1>", unsafe_allow_html=True)
-        st.image("Legende.PNG")    
+
+    ## ======== Légende et Pourcentage ======== ## 
+    col1, col2, col3 = st.columns([0.2, 1, 0.2])
+    with col2: 
+        if len(results[0].boxes) > 0:
+            for box in results[0].boxes:
+                conf = box.conf.item() * 100
+                st.markdown(f"<p style='text-align: center; color: #E2E8F0;'>Détection à {conf:.1f}% d'un bateau</p>", unsafe_allow_html=True)
+        else:
+            st.markdown("<p style='text-align: center; color: #E2E8F0;'>Aucun bateau détecté</p>", unsafe_allow_html=True)
+
+        st.markdown("""
+            <div style="margin-top: 15px; font-size: 0.8rem; color: #E2E8F0; display: flex; flex-direction: column; align-items: center;">
+                <div style="display:flex; align-items:center; margin-bottom:10px;">
+                    <span style="display:inline-block; width:12px; height:12px; background-color:blue; border:1px solid white; margin-right:10px;"></span> Bateau
+                </div>
+                <div style="display:flex; flex-direction: row; gap: 30px;">
+                    <div style="display:flex; align-items:center;">
+                        <span style="display:inline-block; width:10px; height:10px; background-color:red; border-radius:50%; margin-right:5px;"></span> Proue
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <span style="display:inline-block; width:10px; height:10px; background-color:yellow; border-radius:50%; margin-right:5px;"></span> Poupe babord
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <span style="display:inline-block; width:10px; height:10px; background-color:white; border-radius:50%; margin-right:5px;"></span> Poupe tribord
+                    </div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 ## ======== Footer ======== ##
