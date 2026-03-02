@@ -7,6 +7,9 @@ Shipmark est un projet de groupe en collaboration avec Airbus Defense and Space 
     * Démo de la détection de bateaux du modèle 
     * Lien vers un dashboard Comet ML de l'entrainement
 
+## Hébergement Cloud
+Déploiment via Streamlit Cloud : https://shipmark-demo.streamlit.app
+
 ## Structure du projet
 
 ```bash
