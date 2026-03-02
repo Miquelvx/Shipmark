@@ -16,7 +16,9 @@ SHIPMARK/                               # Répertoire du projet Shipmark
 │          
 ├── .gitattributes                      # Fichier .gitattributes du projet
 ├── Model_Shipmark.pt                   # Modèle YOLO entraîné pour la détection de bateaux
+├── packages.txt                        # Fichier contenant les dépendances pour le déploiement cloud
 ├── README.md                           # Fichier README du projet
+├── requirements.tx                     # Fichier contenant les dépendances à installer
 └── Shipmark_demo.py                    # Fichier python pour l'application Streamlit
 ```
 
