@@ -120,7 +120,7 @@ def add_background(image_file):
 add_background('./img_app/Background.png')
 
 ## ======== Importation du model YOLO ======== ##
-model = YOLO("Model.pt")
+model = YOLO("Model_Shipmark.pt")
 
 ## ======== Logo Shipmark ======== ##
 with open("./img_app/logo_shipmark.png", "rb") as f:
