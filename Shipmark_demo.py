@@ -36,9 +36,13 @@ st.markdown(
     """
     <style>
     /* --- GENERAL --- */
-    h3, h5, h6, p {
-        color: #ffffff;
+    h3, h5, h6 {
+        color: #E2E8F0; /* Lighter gray for better readability */
         text-shadow: 1px 1px 3px black;
+    }
+
+    p {
+        color: #ffffff;
     }
 
     /* --- CONTAINERS --- */
@@ -77,7 +81,7 @@ st.markdown(
     /* File Uploader */
     .stFileUploader {
         border: 2px dashed #475569;
-        background-color: rgba(38, 39, 48);
+        background-color: rgba(15, 23, 42, 0.5);
         border-radius: 12px;
         padding: 1rem;
     }
@@ -126,7 +130,7 @@ model = YOLO("Model_Shipmark.pt")
 with open("./img_app/logo_shipmark.png", "rb") as f:
     logo_base64 = base64.b64encode(f.read()).decode()
 st.markdown(f'<div style="display: flex; justify-content: center;"><img src="data:image/png;base64,{logo_base64}" width="200" height="200"></div>', unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; padding: 0 0 2rem 0;'>Testez notre algorithme d'identification de bateaux.</h3>" , unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; padding: 0 0 2rem 0; color: #ffffff;'>Testez notre algorithme d'identification de bateaux.</h3>" , unsafe_allow_html=True)
 
 ## ======== Text Projet ======== ##
 col_text, col_img = st.columns([3, 1], gap="large")
