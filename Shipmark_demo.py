@@ -182,14 +182,14 @@ def reset_demo_selection():
 
 ## ======== Sélection d'images ======== ##
 with st.container():
-    st.markdown("<h5>1. Téléchargez votre propre image. (image satellite obligatoire)</h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='color: #ffffff;'>1. Téléchargez votre propre image. (image satellite obligatoire)</h5>", unsafe_allow_html=True)
     fichiers_images = st.file_uploader("Déposez une image ici ou cliquez pour parcourir.", type=["jpg", "jpeg", "png"], label_visibility='collapsed', key=f"uploader_{st.session_state.uploader_key}", on_change=reset_demo_selection)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with st.container():
     head1, head2 = st.columns([0.7, 0.3])
     with head1:
-        st.markdown("<h5>2. Ou choisissez une image de notre sélection</h5>", unsafe_allow_html=True)
+        st.markdown("<h5 style='color: #ffffff;'>2. Ou choisissez une image de notre sélection</h5>", unsafe_allow_html=True)
     with head2:
         if st.button("🔄 Changer la sélection"):
             st.session_state.rerun_trigger += 1
@@ -239,14 +239,14 @@ if image_source is not None:
     with col1:
         image = Image.open(image_source)
         st.image(image, use_column_width=True)
-        st.markdown("<h6 style='text-align: center;'>Image analysée</h6>", unsafe_allow_html=True)
+        st.markdown("<h6 style='text-align: center; color: #ffffff'>Image analysée</h6>", unsafe_allow_html=True)
     results = model(image)
     res_plotted = results[0].plot()[:, :, ::-1]
     with col2:
         st.image(res_plotted,
                 use_column_width=True
                  )
-        st.markdown("<h6 style='text-align: center;'>Bateau detecté</h1>", unsafe_allow_html=True)
+        st.markdown("<h6 style='text-align: center; color: #ffffff'>Image traitée</h1>", unsafe_allow_html=True)
 
     ## ======== Légende et Pourcentage ======== ## 
     col1, col2, col3 = st.columns([0.2, 1, 0.2])
