@@ -1,7 +1,3 @@
-import os
-os.system("pip uninstall -y opencv-python opencv-contrib-python opencv-python-headless")
-os.system("pip install opencv-python-headless")
-
 ## ======== Importation des librairies ======== ##
 import streamlit as st
 from PIL import Image, ImageOps
