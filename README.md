@@ -3,9 +3,9 @@
 Shipmark est un projet de groupe en collaboration avec Airbus Defense and Space dans le cadre des Engineering Project de Master 2. L'appel d'offres consistait à proposer une solution de détection de bateaux et de placement de point de repère pour la surveillance des espaces maritimes français.
 
 ## Fonctionnalités
-    * Affiche du projet pour les Engineering Project Awards
-    * Démo de la détection de bateaux du modèle 
-    * Lien vers un dashboard Comet ML de l'entrainement
+- Affiche du projet pour les Engineering Project Awards
+- Démo de la détection de bateaux du modèle 
+- Lien vers un dashboard Comet ML de l'entrainement
 
 ## Hébergement Cloud
 Déploiment via Streamlit Cloud : https://shipmark-demo.streamlit.app
