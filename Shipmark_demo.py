@@ -7,6 +7,10 @@ import base64
 import os
 import random
 
+## ======== Configuration ======== ##
+
+st.set_page_config(page_title="Shipmark")
+
 hide_menu = """
 <style>
 #MainMenu{
